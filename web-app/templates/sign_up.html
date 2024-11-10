@@ -3,18 +3,22 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login</title>
+  <title>Sign Up</title>
 </head>
 <body>
-  <h2>Login</h2>
+  <h2>Sign Up</h2>
   <form method="post">
     <label for="username">Username:</label>
     <input type="text" id="username" name="username" required>
     <p></p>
     <label for="password">Password:</label>
     <input type="password" id="password" name="password" required>
-    <button type="submit">Login</button>
+    <p></p>
+    <label for="confirm_password">Confirm Password:</label>
+    <input type="password" id="confirm_password" name="confirm_password" required>
+    <p></p>
+    <button type="submit">Sign Up</button>
   </form>
-  <p>Don't have an account? <a href="{{ url_for('sign_up') }}">Sign up here</a></p>
+  <p>Already have an account? <a href="{{ url_for('login') }}">Log in here</a></p>
 </body>
 </html>
