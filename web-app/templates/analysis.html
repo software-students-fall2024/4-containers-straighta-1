@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analysis</title>
+</head>
+<body>
+  <h2>Analysis Result</h2>
+  <h3>Uploaded Image</h3>
+  <img src="{{ url_for('static', filename=f'uploads/{filename}') }}" alt="Uploaded Image" style="max-width: 300px;">
+  
+  <h3>Analysis Details</h3>
+  <p><strong>Number of Faces Detected:</strong> {{ faces }}</p>
+  <h4>Emotions:</h4>
+  <ul>
+    {% for face in emotions %}
+      <li>Face {{ loop.index }}: {{ face }}</li>
+    {% endfor %}
+  </ul>
+  <a href="{{ url_for('upload') }}">Upload Another Image</a>
+</body>
+</html>
