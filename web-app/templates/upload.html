@@ -1,0 +1,94 @@
+<!-- HTML code -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload Web App</title>
+</head>
+<body>
+    <h2>Upload or Take a Picture</h2>
+    
+    <!-- Form for uploading an image from local storage -->
+    <input type="file" id="fileInput" accept="image/*" onchange="previewImage(event)">
+    <br><br>
+
+    <!-- Button for taking a photo using webcam -->
+    <button onclick="openCamera()">Take a Photo</button>
+    <video id="camera" autoplay style="display: none;"></video>
+    <button id="captureButton" onclick="capturePhoto()" style="display: none;">Capture Photo</button>
+    <br><br>
+
+    <!-- Image preview -->
+    <img id="preview" src="#" alt="Image Preview" style="display: none; width: 300px; height: auto;">
+    <br><br>
+
+    <!-- Submit button -->
+    <button onclick="submitPhoto()">Submit</button>
+
+    <script>
+        // Preview the uploaded image
+        function previewImage(event) {
+            const preview = document.getElementById('preview');
+            preview.src = URL.createObjectURL(event.target.files[0]);
+            preview.style.display = 'block';
+        }
+
+        // Open the camera for taking a photo
+        function openCamera() {
+            const camera = document.getElementById('camera');
+            const captureButton = document.getElementById('captureButton');
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function (stream) {
+                    camera.style.display = 'block';
+                    captureButton.style.display = 'block';
+                    camera.srcObject = stream;
+                })
+                .catch(function (err) {
+                    console.error("Error accessing the camera: ", err);
+                });
+        }
+
+        // Capture the photo from the camera
+        function capturePhoto() {
+            const video = document.getElementById('camera');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            const preview = document.getElementById('preview');
+            preview.src = canvas.toDataURL('image/png');
+            preview.style.display = 'block';
+            // Stop the video stream after capturing
+            video.srcObject.getTracks().forEach(track => track.stop());
+            video.style.display = 'none';
+            document.getElementById('captureButton').style.display = 'none';
+        }
+
+        // Submit the photo to the backend
+        function submitPhoto() {
+            const preview = document.getElementById('preview');
+            if (preview.src) {
+                fetch('/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        image: preview.src
+                    })
+                }).then(response => response.json())
+                  .then(data => {
+                      console.log('Image successfully submitted', data);
+                      alert("Image submitted successfully for analysis.");
+                  }).catch((error) => {
+                      console.error('Error submitting image:', error);
+                      alert("Error submitting image.");
+                  });
+            } else {
+                alert("Please select or take a photo first.");
+            }
+        }
+    </script>
+</body>
+</html>
