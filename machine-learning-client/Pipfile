@@ -4,8 +4,12 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pylint = "*"
+opencv-python-headless = "*"
+fer = "*"
+pymongo = "*"
+pytest = "*"
 black = "*"
+pylint = "*"
 
 [dev-packages]
 
