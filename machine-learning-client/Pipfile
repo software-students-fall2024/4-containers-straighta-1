@@ -10,6 +10,7 @@ pymongo = "*"
 pytest = "*"
 black = "*"
 pylint = "*"
+pytest-cov = "*"
 
 [dev-packages]
 
