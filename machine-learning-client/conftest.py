@@ -1,3 +1,9 @@
+"""
+Pytest configuration and setup module.
+
+This module handles the pytest configuration and environment setup
+for testing the machine learning client application.
+"""
 import os
 import sys
 
