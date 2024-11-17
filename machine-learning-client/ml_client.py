@@ -87,4 +87,5 @@ def process_image(image_data):
 
     return {
         "message": "Image processed",
-        
+        "results": results,
+    }

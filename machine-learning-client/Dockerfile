@@ -35,4 +35,4 @@ COPY machine-learning-client/ml_client.py ./
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV OPENCV_VIDEOIO_PRIORITY_MSMF=0
-CMD ["python", "ml_cli
+CMD ["python", "ml_client.py"]
