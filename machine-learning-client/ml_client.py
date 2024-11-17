@@ -54,3 +54,37 @@ def recognize_emotions(frame, faces):
         if emotions:
             emotions_list.append(emotions[0]["emotions"])
     return emotions_list
+
+
+def process_image(image_data):
+    """
+    Processes the incoming image:
+    1. Decodes the image.
+    2. Identify faces in the image.
+    3. Recognize emotions for each detected face.
+    """
+    # Decode the image
+    frame = decode_image(image_data)
+    if frame is None:
+        return {"message": "Failed to decode image"}
+
+    # identify faces
+    faces = identify_people(frame)
+    if not faces:
+        return {"message": "No faces detected"}
+
+    # Recognize emotions
+    emotions = recognize_emotions(frame, faces)
+
+    # Save results to MongoDB
+    results = {
+        "faces_detected": len(faces),
+        "emotions": emotions,
+        "image": image_data,
+    }
+    collection.insert_one(results)
+
+    return {
+        "message": "Image processed",
+        "results": results,
+    }
