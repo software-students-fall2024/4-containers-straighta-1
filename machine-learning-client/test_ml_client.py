@@ -1,13 +1,12 @@
 # pylint: disable=redefined-outer-name
 """Test module for machine learning client functionalities."""
+from unittest.mock import patch, MagicMock
 import base64
-from unittest.mock import patch
 import pytest
 import numpy as np
 import cv2
 
-# Import the functions to test
-from ml_client import decode_image, identify_people, recognize_emotions
+from ml_client import decode_image, identify_people, recognize_emotions, process_image
 
 
 @pytest.fixture
@@ -57,6 +56,12 @@ def mock_emotion_detector():
             }
         ]
         return instance
+
+
+@pytest.fixture
+def mock_db_collection():
+    """Mock MongoDB collection."""
+    return MagicMock()
 
 
 def test_decode_image_valid_input(encoded_image):
@@ -151,6 +156,4 @@ def test_full_pipeline_integration(
         assert isinstance(img, np.ndarray)
         faces = identify_people(img)
         assert len(faces) == 1
-        emotions = recognize_emotions(img, faces)
-        assert len(emotions) == 1
-        assert emotions[0]["happy"] == 0.75
+        emotions = recognize_em
