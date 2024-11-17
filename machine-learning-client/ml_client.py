@@ -48,7 +48,7 @@ def recognize_emotions(frame, faces):
     Recognize emotions for each face.
     """
     emotions_list = []
-    for x, y, w, h in faces:
+    for x, y, w, h in faces:  # pylint: disable=invalid-name
         face_image = frame[y : y + h, x : x + w]
         emotions = emotion_detector.detect_emotions(face_image)
         if emotions:
