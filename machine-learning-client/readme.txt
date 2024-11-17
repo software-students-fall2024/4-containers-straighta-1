@@ -1,6 +1,6 @@
 Code related to the machine learning client goes in this folder.
 
-ml_client have function called process_img, which will both:
+ml_client have function called process_image, which will both:
     - store result data in database
     - return informations
 
@@ -8,8 +8,8 @@ Data will be stored in:
     database: ml_database
     collection: analysis_results
 
-Backend must import process_img from ml_client.py
-    - process_img(image_data) requires image data from upload
+Backend must import process_image from ml_client.py
+    - process_image(image_data) requires image data from upload
     - Note: ml_database will be in same cluster with database for
       uploads. 
     -   cluster: # for a mongodb cluster
@@ -18,7 +18,7 @@ Backend must import process_img from ml_client.py
             database: ml_database
                 collection: analysis_results
 
-A possible form of data returned from process_img:
+A possible form of data returned from process_image:
 
 * if no image is read:
     - {"message": "Failed to decode image"}
