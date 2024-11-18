@@ -70,7 +70,8 @@ def process_image(image_data):
 
     # identify faces
     faces = identify_people(frame)
-    if not faces:
+    # if not faces:
+    if len(faces) == 0:
         return {"message": "No faces detected"}
 
     # Recognize emotions

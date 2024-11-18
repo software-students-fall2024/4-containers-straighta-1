@@ -1,13 +1,12 @@
 # pylint: disable=redefined-outer-name
 """Test module for machine learning client functionalities."""
+from unittest.mock import patch, MagicMock
 import base64
-from unittest.mock import patch
 import pytest
 import numpy as np
 import cv2
 
-# Import the functions to test
-from ml_client import decode_image, identify_people, recognize_emotions
+from ml_client import decode_image, identify_people, recognize_emotions, process_image
 
 
 @pytest.fixture
@@ -57,6 +56,12 @@ def mock_emotion_detector():
             }
         ]
         return instance
+
+
+@pytest.fixture
+def mock_db_collection():
+    """Mock MongoDB collection."""
+    return MagicMock()
 
 
 def test_decode_image_valid_input(encoded_image):
@@ -154,3 +159,121 @@ def test_full_pipeline_integration(
         emotions = recognize_emotions(img, faces)
         assert len(emotions) == 1
         assert emotions[0]["happy"] == 0.75
+
+
+def test_process_image_successful(encoded_image, mock_db_collection):
+    """Test successful image processing workflow."""
+    with patch("ml_client.decode_image") as mock_decode, patch(
+        "ml_client.identify_people"
+    ) as mock_identify, patch("ml_client.recognize_emotions") as mock_recognize, patch(
+        "ml_client.collection", mock_db_collection
+    ):
+
+        # Setup mock returns
+        mock_decode.return_value = np.zeros((100, 100, 3))
+        mock_identify.return_value = np.array([[10, 20, 30, 40]])
+        mock_recognize.return_value = [{"happy": 0.8, "sad": 0.2}]
+
+        # Process image
+        result = process_image(encoded_image)
+
+        # Verify result structure and content
+        assert result["message"] == "Image processed"
+        assert "results" in result
+        assert result["results"]["faces_detected"] == 1
+        assert len(result["results"]["emotions"]) == 1
+        assert result["results"]["image"] == encoded_image
+
+        # Verify database interaction
+        mock_db_collection.insert_one.assert_called_once()
+
+
+def test_process_image_decode_failure(encoded_image, mock_db_collection):
+    """Test handling of image decoding failure."""
+    with patch("ml_client.decode_image") as mock_decode, patch(
+        "ml_client.collection", mock_db_collection
+    ):
+
+        # Setup mock to simulate decoding failure
+        mock_decode.return_value = None
+
+        # Process image
+        result = process_image(encoded_image)
+
+        # Verify error handling
+        assert result["message"] == "Failed to decode image"
+
+        # Verify no database interaction occurred
+        mock_db_collection.insert_one.assert_not_called()
+
+
+def test_process_image_no_faces(encoded_image, mock_db_collection):
+    """Test handling when no faces are detected."""
+    with patch("ml_client.decode_image") as mock_decode, patch(
+        "ml_client.identify_people"
+    ) as mock_identify, patch("ml_client.collection", mock_db_collection):
+
+        # Setup mocks
+        mock_decode.return_value = np.zeros((100, 100, 3))
+        mock_identify.return_value = np.array([])
+
+        # Process image
+        result = process_image(encoded_image)
+
+        # Verify error handling
+        assert result["message"] == "No faces detected"
+
+        # Verify no database interaction occurred
+        mock_db_collection.insert_one.assert_not_called()
+
+
+def test_process_image_multiple_faces(encoded_image, mock_db_collection):
+    """Test processing image with multiple faces."""
+    with patch("ml_client.decode_image") as mock_decode, patch(
+        "ml_client.identify_people"
+    ) as mock_identify, patch("ml_client.recognize_emotions") as mock_recognize, patch(
+        "ml_client.collection", mock_db_collection
+    ):
+
+        # Setup mocks
+        mock_faces = np.array([[10, 20, 30, 40], [50, 60, 70, 80]])
+        mock_emotions = [{"happy": 0.8, "sad": 0.2}, {"happy": 0.6, "angry": 0.4}]
+
+        mock_decode.return_value = np.zeros((100, 100, 3))
+        mock_identify.return_value = mock_faces
+        mock_recognize.return_value = mock_emotions
+
+        # Process image
+        result = process_image(encoded_image)
+
+        # Verify results
+        assert result["message"] == "Image processed"
+        assert result["results"]["faces_detected"] == 2
+        assert len(result["results"]["emotions"]) == 2
+
+        # Verify database interaction with correct data
+        mock_db_collection.insert_one.assert_called_once()
+        call_arg = mock_db_collection.insert_one.call_args[0][0]
+        assert call_arg["faces_detected"] == 2
+        assert call_arg["emotions"] == mock_emotions
+
+
+def test_process_image_database_error(encoded_image, mock_db_collection):
+    """Test handling of database insertion error."""
+    with patch("ml_client.decode_image") as mock_decode, patch(
+        "ml_client.identify_people"
+    ) as mock_identify, patch("ml_client.recognize_emotions") as mock_recognize, patch(
+        "ml_client.collection", mock_db_collection
+    ):
+
+        # Setup mocks
+        mock_decode.return_value = np.zeros((100, 100, 3))
+        mock_identify.return_value = np.array([[10, 20, 30, 40]])
+        mock_recognize.return_value = [{"happy": 0.8, "sad": 0.2}]
+        mock_db_collection.insert_one.side_effect = Exception("Database error")
+
+        # Process image and expect exception
+        with pytest.raises(Exception) as exc_info:
+            process_image(encoded_image)
+
+        assert str(exc_info.value) == "Database error"
