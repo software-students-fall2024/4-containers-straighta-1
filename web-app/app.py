@@ -41,3 +41,42 @@ def login():
             return redirect(url_for('login'))
 
     return render_template('login.html')
+
+@app.route('/sign_up', methods=['GET', 'POST'])
+def sign_up():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = generate_password_hash(request.form['password'])
+
+        if users_collection.find_one({'username': username}):
+            flash("Username already exists. Please choose another one.", "error")
+            return redirect(url_for('sign_up'))
+
+        users_collection.insert_one({'username': username, 'password': password})
+        flash("Sign-up successful! Please log in.", "success")
+        return redirect(url_for('login'))
+
+    return render_template('sign_up.html')
+
+@app.route('/upload', methods=['GET', 'POST'])
+def upload():
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            flash("No file part", "error")
+            return redirect(request.url)
+
+        file = request.files['file']
+        if file.filename == '':
+            flash("No file selected", "error")
+            return redirect(request.url)
+
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            flash("File uploaded successfully!", "success")
+            return redirect(url_for('upload'))
+
+    return render_template('upload.html')
+
+if __name__ == '__main__':
+    app.run(debug=True)
