@@ -30,3 +30,52 @@ Key Features:
 - [Hannah Liang](https://github.com/HannahLiang627)
 
 ---
+
+## **Subsystems**
+
+### **1. Web App**
+- **Technology**: Python (Flask).
+- **Functionality**:
+  - Allows users to upload images.
+  - Displays analysis results from MongoDB.
+- **Code Location**: `web-app/`.
+
+### **2. Machine Learning Client**
+- **Technology**: Python.
+- **Functionality**:
+  - Processes images for facial detection and emotion analysis.
+  - Saves analysis results to MongoDB.
+- **Code Location**: `ml-client/`.
+
+### **3. MongoDB**
+- **Technology**: MongoDB database.
+- **Functionality**:
+  - Stores image data and analysis results.
+  - Used by both Web App and ML Client subsystems.
+- **Setup**: Runs in a Docker container.
+
+---
+
+## **Setup and Configuration**
+
+### **System Requirements**
+- Python 3.10 or higher
+- Docker and Docker Compose
+- MongoDB (local or Atlas cluster)
+
+### **Environment Variables**
+Create a `.env` file in both the `web-app/` and `ml-client/` directories. Include the following variables:
+
+#### **Web App `.env`**
+```env
+FLASK_APP=app.py
+FLASK_ENV=production
+SECRET_KEY=your_secret_key
+MONGO_URI=mongodb://mongo:27017/
+```
+
+#### **ML Client `.env`**
+
+MONGO_URI=mongodb://mongo:27017/
+DATABASE_NAME=ml_database
+COLLECTION_NAME=analysis_results
