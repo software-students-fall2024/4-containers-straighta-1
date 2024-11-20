@@ -1,3 +1,10 @@
+"""
+This module contains a Flask application for:
+- User authentication (login and sign-up)
+- File uploads
+- Integration with MongoDB
+"""
+
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash
 from werkzeug.utils import secure_filename
