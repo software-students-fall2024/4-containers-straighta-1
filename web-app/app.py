@@ -1,13 +1,17 @@
+import os
 from flask import Flask, render_template, request, redirect, url_for, flash
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from pymongo import MongoClient
-import os
+from pymongo.errors import ConnectionFailure
+from dotenv import load_dotenv
 
 load_dotenv()
 
 def create_app():
-
+    """
+    Creates and configures the Flask application.
+    """
     app = Flask(__name__)
     app.secret_key = 'your_secret_key'  # Change this to a strong secret key
 
@@ -18,26 +22,28 @@ def create_app():
 
     try:
         client.admin.command("ping")
-        print(" *", "Connected to MongoDB!")
-    except Exception as e:
+        print(" * Connected to MongoDB!")
+    except ConnectionFailure as e:
         print(" * MongoDB connection error:", e)
-        
 
     # File upload setup
-    UPLOAD_FOLDER = 'uploads'
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-    ALLOWED_EXTENSIONS = {'txt', 'csv', 'jpg', 'png', 'pdf'}
+    upload_folder = 'uploads'
+    os.makedirs(upload_folder, exist_ok=True)
+    app.config['UPLOAD_FOLDER'] = upload_folder
+    allowed_extensions = {'txt', 'csv', 'jpg', 'png', 'pdf'}
 
     def allowed_file(filename):
-        return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+        """Check if the file extension is allowed."""
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
 
     @app.route('/')
     def home():
+        """Redirect to the login page."""
         return redirect(url_for('login'))
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():
+        """Handle user login."""
         if request.method == 'POST':
             username = request.form['username']
             password = request.form['password']
@@ -47,14 +53,15 @@ def create_app():
             if user and check_password_hash(user['password'], password):
                 flash("Login successful!", "success")
                 return redirect(url_for('upload'))
-            else:
-                flash("Invalid username or password. Please try again.", "error")
-                return redirect(url_for('login'))
+
+            flash("Invalid username or password. Please try again.", "error")
+            return redirect(url_for('login'))
 
         return render_template('login.html')
 
     @app.route('/sign_up', methods=['GET', 'POST'])
     def sign_up():
+        """Handle user sign-up."""
         if request.method == 'POST':
             username = request.form['username']
             password = generate_password_hash(request.form['password'])
@@ -71,6 +78,7 @@ def create_app():
 
     @app.route('/upload', methods=['GET', 'POST'])
     def upload():
+        """Handle file uploads."""
         if request.method == 'POST':
             if 'file' not in request.files:
                 flash("No file part", "error")
