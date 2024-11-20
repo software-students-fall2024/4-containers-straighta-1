@@ -79,3 +79,86 @@ MONGO_URI=mongodb://mongo:27017/
 MONGO_URI=mongodb://mongo:27017/
 DATABASE_NAME=ml_database
 COLLECTION_NAME=analysis_results
+
+---
+
+## Steps necessary to run the software
+1. **Install Python**:
+   - Make sure Python 3.8 or higher is installed on your system. You can download it from python.org.
+
+2. **Clone the repository**:
+   - Run the following commands to create and activate the virtual environment:
+     ```bash
+     git clone https://github.com/software-students-fall2024/4-containers-straighta-1.git
+     cd your-repository-folder
+     ```
+3. **Set up a Virtual Environment**:
+   - Run the following commands to create and activate the virtual environment:
+     ```bash
+     python3 -m venv venv
+     ```
+   - Activate the virtual environment:
+     - On Windows:
+       ```bash
+       .\venv\Scripts\activate
+       ```
+     - On macOS/Linux:
+       ```bash
+       source venv/bin/activate
+       ```
+
+4. **Install Dependencies**:
+   - Use the `requirements.txt` file to install the necessary Python libraries:
+     ```bash
+     pip install -r requirements.txt
+     ```
+
+5. **Set up Environment Variables**:
+   - Create a `.env` file in the root directory of your project and add the following variables:
+    ```env
+    MONGO_DBNAME=user_db
+    MONGO_URI=mongodb://localhost:27017/user_db
+    #MONGO_URI=mongodb+srv://zl3927:PKXFzrHguY8QDwd6@cluster0.tem8w.mongodb.net/retryWrites=true&w=majority&appName=Cluster0
+    FLASK_APP=app.py
+    FLASK_ENV=development
+    FLASK_PORT=5000
+    ```
+
+6. **Run MongoDB (if using Docker)**
+   - If you’re running MongoDB locally using Docker, start the MongoDB container:
+   ```bash
+   docker run --name my-mongo -d -p 27017:27017 mongo:latest
+   ```
+   If this code is not working, then run this: 
+   ```bash
+   docker-compose up --build
+   ```
+   - If any container has name conflicts (my-mongo):
+      - stop the old containter by:
+      ```bash
+      docker stop my-mongo
+      ```
+      - After stopping, remove it with:
+      ```bash
+      docker rm my-mongo
+      ```
+      - Then start the MongoDB container.
+7. **Run the Flask Application**
+   - In the terminal (with the virtual environment activated), run: 
+   ```bash
+   python app.py
+   ```
+   - or using Flask if above command not working:
+    ```bash
+   flask run --port=5000
+   ```
+
+8. **Access the Application**
+   - Open a web browser and go to `http://127.0.0.1:5000/` 
+   This will take you to the login page.
+
+9. **Deactivate the Virtual Environment (Optional)**
+   - When finished, deactivate the virtual environment by typing:
+     ```bash
+     deactivate
+     ```
