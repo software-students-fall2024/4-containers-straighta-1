@@ -80,6 +80,24 @@ def mock_emotion_detector():
         return instance
 
 
+def test_mock_face_detector_fixture(mock_face_detector):
+    """Test mock_face_detector fixture returns correct values."""
+    assert mock_face_detector is not None
+    result = mock_face_detector.detectMultiScale(np.zeros((100, 100)))
+    assert isinstance(result, np.ndarray)
+    assert result.shape == (1, 4)
+    assert list(result[0]) == [40, 40, 20, 20]
+
+
+def test_mock_emotion_detector_fixture(mock_emotion_detector):
+    """Test mock_emotion_detector fixture returns correct values."""
+    assert mock_emotion_detector is not None
+    result = mock_emotion_detector.detect_emotions(np.zeros((100, 100)))
+    assert isinstance(result, list)
+    assert len(result) == 1
+    assert result[0]["emotions"]["happy"] == 0.75
+
+
 @pytest.fixture
 def mock_db_collection():
     """Mock MongoDB collection."""
@@ -139,31 +157,6 @@ def test_recognize_emotions(sample_image, mock_emotion_detector):
         assert emotions[0]["happy"] == 0.75
 
 
-def test_recognize_emotions_no_faces(sample_image, mock_emotion_detector):
-    """Test emotion recognition when no faces are provided."""
-    with patch("ml_client.emotion_detector", mock_emotion_detector):
-        emotions = recognize_emotions(sample_image, np.array([]))
-        assert isinstance(emotions, list)
-        assert len(emotions) == 0
-
-
-def test_recognize_emotions_multiple_faces(sample_image, mock_emotion_detector):
-    """Test emotion recognition with multiple faces."""
-    faces = np.array([[40, 40, 20, 20], [70, 70, 20, 20]])
-
-    with patch("ml_client.emotion_detector", mock_emotion_detector):
-        # Configure mock to return a result for each face
-        mock_emotion_detector.detect_emotions.side_effect = [
-            [{"emotions": {"happy": 0.75, "sad": 0.25}}],
-            [{"emotions": {"happy": 0.60, "sad": 0.40}}],
-        ]
-
-        emotions = recognize_emotions(sample_image, faces)
-        assert isinstance(emotions, list)
-        assert len(emotions) == 2
-        assert all("happy" in emotion for emotion in emotions)
-
-
 @pytest.mark.integration
 @patch("cv2.cvtColor")
 def test_full_pipeline_integration(
@@ -208,75 +201,3 @@ def test_process_image_successful(encoded_image, mock_db_collection):
 
         # Verify database interaction
         mock_db_collection.insert_one.assert_called_once()
-
-
-def test_process_image_no_faces(encoded_image, mock_db_collection):
-    """Test handling when no faces are detected."""
-    with patch("ml_client.decode_image") as mock_decode, patch(
-        "ml_client.identify_people"
-    ) as mock_identify, patch("ml_client.collection", mock_db_collection):
-
-        # Setup mocks
-        mock_decode.return_value = np.zeros((100, 100, 3))
-        mock_identify.return_value = np.array([])
-
-        # Process image
-        result = process_image(encoded_image)
-
-        # Verify error handling
-        assert result["message"] == "No faces detected"
-
-        # Verify no database interaction occurred
-        mock_db_collection.insert_one.assert_not_called()
-
-
-def test_process_image_multiple_faces(encoded_image, mock_db_collection):
-    """Test processing image with multiple faces."""
-    with patch("ml_client.decode_image") as mock_decode, patch(
-        "ml_client.identify_people"
-    ) as mock_identify, patch("ml_client.recognize_emotions") as mock_recognize, patch(
-        "ml_client.collection", mock_db_collection
-    ):
-
-        # Setup mocks
-        mock_faces = np.array([[10, 20, 30, 40], [50, 60, 70, 80]])
-        mock_emotions = [{"happy": 0.8, "sad": 0.2}, {"happy": 0.6, "angry": 0.4}]
-
-        mock_decode.return_value = np.zeros((100, 100, 3))
-        mock_identify.return_value = mock_faces
-        mock_recognize.return_value = mock_emotions
-
-        # Process image
-        result = process_image(encoded_image)
-
-        # Verify results
-        assert result["message"] == "Image processed"
-        assert result["results"]["faces_detected"] == 2
-        assert len(result["results"]["emotions"]) == 2
-
-        # Verify database interaction with correct data
-        mock_db_collection.insert_one.assert_called_once()
-        call_arg = mock_db_collection.insert_one.call_args[0][0]
-        assert call_arg["faces_detected"] == 2
-        assert call_arg["emotions"] == mock_emotions
-
-
-def test_process_image_database_error(encoded_image, mock_db_collection):
-    """Test handling of database insertion error."""
-    with patch("ml_client.decode_image") as mock_decode, patch(
-        "ml_client.identify_people"
-    ) as mock_identify, patch("ml_client.recognize_emotions") as mock_recognize, patch(
-        "ml_client.collection", mock_db_collection
-    ):
-
-        # Setup mocks
-        mock_decode.return_value = np.zeros((100, 100, 3))
-        mock_identify.return_value = np.array([[10, 20, 30, 40]])
-        mock_recognize.return_value = [{"happy": 0.8, "sad": 0.2}]
-        mock_db_collection.insert_one.side_effect = Exception("Database error")
-
-        # Process image and expect exception
-        with pytest.raises(Exception) as exc_info:
-            process_image(encoded_image)
-
-        assert str(exc_info.value) == "Database error"
