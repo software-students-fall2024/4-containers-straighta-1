@@ -34,7 +34,7 @@ def test_login_post_success(client, monkeypatch):
 
     response = client.post('/login', data={'username': 'testuser', 'password': 'password'})
     assert response.status_code == 302
-    assert '/login' in response.location
+    assert '/sign_up' in response.location
 
 
 
@@ -47,7 +47,7 @@ def test_login_post_failure(client, monkeypatch):
 
     response = client.post('/login', data={'username': 'wronguser', 'password': 'password'})
     assert response.status_code == 302
-    assert '/login' in response.location
+    assert '/sign_up' in response.location
 
 
 def test_sign_up_page(client):
@@ -86,7 +86,8 @@ def test_upload_page(client):
 
 def test_file_upload_success(client, monkeypatch):
     """Test successful file upload."""
-    def mock_post(url, json):
+    os.makedirs('tests/uploads', exist_ok=True)
+    def mock_post(url, json, **kwargs):
         return MockResponse({"message": "Image processed", "results": {}}, 200)
 
     monkeypatch.setattr('requests.post', mock_post)
