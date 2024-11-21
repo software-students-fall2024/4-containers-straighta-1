@@ -68,7 +68,7 @@ def login():
             return redirect(url_for('upload'))
 
         flash("Invalid username or password. Please try again.", "error")
-        return redirect(url_for('login'))
+        return redirect(url_for('sign_up'))
 
     return render_template('login.html')
 
@@ -96,11 +96,7 @@ def sign_up():
 
     return render_template('sign_up.html')
 
-def allowed_file(filename):
-    """
-    Check if the uploaded file has a valid extension.
-    """
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
