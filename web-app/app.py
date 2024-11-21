@@ -23,6 +23,11 @@ Routes:
 Usage:
     Run the script and navigate to the provided address in your browser to use the application.
     Make sure MongoDB is running on localhost and port 27017.
+
+Download: 
+pip install flask 
+pip install werkzeug 
+pip install pymongo
 """
 
 import os
