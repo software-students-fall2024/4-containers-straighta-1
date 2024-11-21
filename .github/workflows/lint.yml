@@ -19,6 +19,7 @@ jobs:
           cd ${{ matrix.subdir }}
           python -m pip install --upgrade pip
           python -m pip install pipenv
+          pip install -r requirements.txt
           python -m pip install black pylint  # Add explicit installation of black and pylint
           pipenv install --dev
           pipenv sync --dev --python $(which python)
