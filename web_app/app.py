@@ -136,7 +136,10 @@ def upload():
 
                     # Save analysis results to the session
                     response_data = response.json()
-                    session['analysis'] = response_data['results']
+                    if response_data.get("results") is not None:
+                        # session to large is invalid, only store name
+                        response_data['results']['image'] = filename
+                    session['analysis'] = response_data
                     session['filename'] = filename
                     return redirect(url_for('analysis'))
 
@@ -161,16 +164,20 @@ def analysis():
     if not analysis_results:
         flash("No analysis results found. Please upload an image first.", "error")
         return redirect(url_for('upload'))
+    if analysis_results.get("message") == "No faces detected":
+        flash("No faces detected", "error")
+        return redirect(url_for('upload'))
 
+    results = analysis_results.get("results", {})
     return render_template(
         'analysis.html',
         filename=filename,
-        faces=analysis_results.get("faces_detected", 0),
-        emotions=analysis_results.get("emotions", [])
+        faces=results.get("faces_detected", 0),
+        emotions=results.get("emotions", [])
     )
 
 
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5001)
+    app.run(host="0.0.0.0", port=5000)
