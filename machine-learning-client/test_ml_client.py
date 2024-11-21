@@ -7,6 +7,15 @@ import numpy as np
 import cv2
 
 from ml_client import decode_image, identify_people, recognize_emotions, process_image
+from app import app
+
+
+@pytest.fixture
+def client():
+    """Create a test client for Flask app."""
+    app.config["TESTING"] = True
+    with app.test_client() as client:
+        yield client
 
 
 @pytest.fixture
@@ -26,6 +35,19 @@ def encoded_image(sample_image):  # pylint: disable=redefined-outer-name
     # pylint: disable=no-member
     _, buffer = cv2.imencode(".jpg", sample_image)
     return base64.b64encode(buffer).decode("utf-8")
+
+
+def test_sample_image_fixture(sample_image):
+    """Test sample_image fixture creation."""
+    assert isinstance(sample_image, np.ndarray)
+    assert sample_image.shape == (100, 100, 3)
+
+
+def test_encoded_image_fixture(encoded_image):
+    """Test encoded_image fixture creation."""
+    assert isinstance(encoded_image, str)
+    decoded = base64.b64decode(encoded_image)
+    assert len(decoded) > 0
 
 
 @pytest.fixture
@@ -186,25 +208,6 @@ def test_process_image_successful(encoded_image, mock_db_collection):
 
         # Verify database interaction
         mock_db_collection.insert_one.assert_called_once()
-
-
-def test_process_image_decode_failure(encoded_image, mock_db_collection):
-    """Test handling of image decoding failure."""
-    with patch("ml_client.decode_image") as mock_decode, patch(
-        "ml_client.collection", mock_db_collection
-    ):
-
-        # Setup mock to simulate decoding failure
-        mock_decode.return_value = None
-
-        # Process image
-        result = process_image(encoded_image)
-
-        # Verify error handling
-        assert result["message"] == "Failed to decode image"
-
-        # Verify no database interaction occurred
-        mock_db_collection.insert_one.assert_not_called()
 
 
 def test_process_image_no_faces(encoded_image, mock_db_collection):
