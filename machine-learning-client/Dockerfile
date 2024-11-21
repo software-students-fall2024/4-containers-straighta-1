@@ -29,10 +29,10 @@ RUN apt-get update && apt-get install -y \
     libxrender-dev \
     && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir pipenv
-COPY machine-learning-client/Pipfile* ./
+COPY Pipfile* ./
 RUN pipenv install --system --deploy
-COPY machine-learning-client/ml_client.py ./
-COPY machine-learning-client/app.py ./
+COPY ml_client.py ./
+COPY app.py ./
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV OPENCV_VIDEOIO_PRIORITY_MSMF=0
