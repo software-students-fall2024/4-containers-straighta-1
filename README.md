@@ -80,6 +80,29 @@ MONGO_URI=mongodb://mongo:27017/
 DATABASE_NAME=ml_database
 COLLECTION_NAME=analysis_results
 
+#### *MongoDB**
+No additional configuration is needed for MongoDB if running with Docker Compose.
+
+---
+## **Codebase Structure**
+.
+├── web-app/
+│   ├── app.py                 # Flask application
+│   ├── templates/             # HTML templates
+│   ├── static/                # Static files (CSS, JS)
+│   ├── .env                   # Environment variables
+│   ├── Dockerfile             # Dockerfile for web app
+│   ├── requirements.txt       # Dependencies
+│   ├── tests/                 # Unit tests
+├── ml-client/
+│   ├── ml_client.py           # ML client code
+│   ├── .env                   # Environment variables
+│   ├── Dockerfile             # Dockerfile for ML client
+│   ├── requirements.txt       # Dependencies
+│   ├── tests/                 # Unit tests
+├── docker-compose.yml         # Compose file for services
+├── README.md                  # Documentation
+
 ---
 
 ## Steps necessary to run the software
@@ -162,3 +185,16 @@ COLLECTION_NAME=analysis_results
      ```bash
      deactivate
      ```
+
+10. **Contributing**
+   - Fork the repository.
+   - Create a new branch for your feature:
+   ```bash
+   git checkout -b feature/your-feature
+   ```
+   - Commit and push your changes
+   ```bash
+   git commit -m "Add your feature"
+   git push origin feature/your-feature
+   ```
+   - Open a pull request on GitHub.
