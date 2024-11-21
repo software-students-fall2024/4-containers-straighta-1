@@ -182,7 +182,7 @@ No additional configuration is needed for MongoDB if running with Docker Compose
 
 9. **Deactivate the Virtual Environment (Optional)**
    - When finished, deactivate the virtual environment by typing:
-     ```bash
+     ```bas
      deactivate
      ```
 
