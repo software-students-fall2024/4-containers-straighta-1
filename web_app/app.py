@@ -10,6 +10,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 from dotenv import load_dotenv
+import requests 
 
 # Load environment variables
 load_dotenv()
@@ -37,7 +38,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 # ML container configuration
-ML_CLIENT_URL = os.getenv("ML_CLIENT_URL", "http://ml-container:5001/process")
+ML_CLIENT_URL = os.getenv("ML_CLIENT_URL", "http://127.0.0.1:5001/process")
 
 
 def allowed_file(filename):
@@ -95,6 +96,11 @@ def sign_up():
 
     return render_template('sign_up.html')
 
+def allowed_file(filename):
+    """
+    Check if the uploaded file has a valid extension.
+    """
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
@@ -102,44 +108,48 @@ def upload():
     Handle file uploads and forward them to the ML container for processing.
     """
     if request.method == 'POST':
-        if 'file' not in request.files:
-            flash("No file part", "error")
-            return redirect(request.url)
+        # Handle image from the file upload form
+        if 'file' in request.files:
+            file = request.files['file']
 
-        file = request.files['file']
-        if file.filename == '':
-            flash("No file selected", "error")
-            return redirect(request.url)
+            if file.filename == '':
+                flash("No file selected", "error")
+                return redirect(request.url)
 
-        if file and allowed_file(file.filename):
-            # Save the file locally
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
+            if file and allowed_file(file.filename):
+                # Save the file locally
+                filename = secure_filename(file.filename)
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(filepath)
 
-            # Read the file and encode it as base64
-            with open(filepath, "rb") as image_file:
-                image_data = base64.b64encode(image_file.read()).decode('latin-1')
+                # Read the file and encode it as base64
+                try:
+                    with open(filepath, "rb") as image_file:
+                        image_data = base64.b64encode(image_file.read()).decode('latin-1')
 
-            # Send the image data to the ML container
-            try:
-                response = request.post(
-                    ML_CLIENT_URL,
-                    json={"image": image_data}
-                )
-                response_data = response.json()
+                    # Send the image data to the ML container
+                    response = requests.post(
+                        ML_CLIENT_URL,
+                        json={"image": image_data},
+                        timeout=10
+                    )
 
-                if response.status_code != 200:
-                    flash(f"ML error: {response_data.get('message', 'Unknown error')}", "error")
+                    if response.status_code != 200:
+                        flash(f"ML error: {response.json().get('message', 'Unknown error')}", "error")
+                        return redirect(url_for('upload'))
+
+                    # Save analysis results to the session
+                    response_data = response.json()
+                    session['analysis'] = response_data['results']
+                    session['filename'] = filename
+                    return redirect(url_for('analysis'))
+
+                except requests.exceptions.RequestException as e:
+                    flash(f"Failed to connect to the ML container: {e}", "error")
                     return redirect(url_for('upload'))
 
-                # Pass results to the analysis page
-                session['analysis'] = response_data
-                return redirect(url_for('analysis', filename=filename))
-
-            except request.exceptions.RequestException as e:
-                flash(f"Failed to connect to the ML container: {e}", "error")
-                return redirect(url_for('upload'))
+        flash("Please upload a valid image file.", "error")
+        return redirect(url_for('upload'))
 
     return render_template('upload.html')
 
@@ -150,7 +160,7 @@ def analysis():
     Display analysis results.
     """
     analysis_results = session.get('analysis', {})
-    filename = request.args.get('filename', '')
+    filename = session.get('filename', '')
 
     if not analysis_results:
         flash("No analysis results found. Please upload an image first.", "error")
@@ -164,5 +174,7 @@ def analysis():
     )
 
 
+
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5001)
