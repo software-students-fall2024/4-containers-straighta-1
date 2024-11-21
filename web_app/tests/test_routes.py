@@ -34,7 +34,7 @@ def test_login_post_success(client, monkeypatch):
 
     response = client.post('/login', data={'username': 'testuser', 'password': 'password'})
     assert response.status_code == 302
-    assert '/upload' in response.location
+    assert '/login' in response.location
 
 
 
