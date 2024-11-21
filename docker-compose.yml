@@ -6,7 +6,7 @@ services:
       context: ./web_app  # Use the current directory for the web app
       dockerfile: Dockerfile  # Dockerfile for the web app
     ports:
-      - "5001:5001"  # Map port 5000 of the container to port 5000 of the host
+      - "5000:5000"  # Map port 5000 of the container to port 5000 of the host
     volumes:
       - .:/app  # Mount the current directory to `/app` in the container
     depends_on:
