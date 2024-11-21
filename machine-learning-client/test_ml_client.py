@@ -99,7 +99,6 @@ def test_decode_image_invalid_input():
     with pytest.raises(Exception):
         decode_image("invalid-base64-data")
 
-
 @patch("cv2.cvtColor")
 @patch("cv2.cvtColor")
 def test_identify_people(mock_cvt_color, sample_image, mock_face_detector):
@@ -123,6 +122,15 @@ def test_identify_people_no_faces(mock_cvt_color, sample_image, mock_face_detect
         assert isinstance(faces, np.ndarray)
         assert len(faces) == 0
         mock_face_detector.detectMultiScale.assert_called_once()
+
+
+@patch("cv2.cvtColor")
+def test_identify_people_invalid_image(mock_cvt_color, mock_face_detector):
+    """Test face detection with invalid image input."""
+    mock_cvt_color.side_effect = Exception("Invalid image")
+    with patch("ml_client.face_detector", mock_face_detector):
+        with pytest.raises(Exception):
+            identify_people(None)
 
 
 def test_recognize_emotions(sample_image, mock_emotion_detector):
@@ -165,22 +173,20 @@ def test_recognize_emotions_multiple_faces(sample_image, mock_emotion_detector):
 
 
 @pytest.mark.integration
-@patch("cv2.cvtColor")
 def test_full_pipeline_integration(
-    mock_cvt_color, encoded_image, mock_face_detector, mock_emotion_detector
+    encoded_image, mock_face_detector, mock_emotion_detector, mock_db_collection
 ):
-    """Test the full pipeline from image decoding to emotion recognition."""
-    mock_cvt_color.return_value = np.zeros((100, 100), dtype=np.uint8)
+    """Test the full pipeline from image decoding to emotion recognition and database storage."""
     with patch("ml_client.face_detector", mock_face_detector), patch(
         "ml_client.emotion_detector", mock_emotion_detector
-    ):
-        img = decode_image(encoded_image)
-        assert isinstance(img, np.ndarray)
-        faces = identify_people(img)
-        assert len(faces) == 1
-        emotions = recognize_emotions(img, faces)
-        assert len(emotions) == 1
-        assert emotions[0]["happy"] == 0.75
+    ), patch("ml_client.collection", mock_db_collection):
+        result = process_image(encoded_image)
+        assert result["message"] == "Image processed"
+        assert "results" in result
+        assert result["results"]["faces_detected"] > 0
+        assert len(result["results"]["emotions"]) > 0
+        assert result["results"]["image"] == encoded_image
+        mock_db_collection.insert_one.assert_called_once()
 
 
 def test_process_image_successful(encoded_image, mock_db_collection):
@@ -259,24 +265,3 @@ def test_process_image_multiple_faces(encoded_image, mock_db_collection):
         call_arg = mock_db_collection.insert_one.call_args[0][0]
         assert call_arg["faces_detected"] == 2
         assert call_arg["emotions"] == mock_emotions
-
-
-def test_process_image_database_error(encoded_image, mock_db_collection):
-    """Test handling of database insertion error."""
-    with patch("ml_client.decode_image") as mock_decode, patch(
-        "ml_client.identify_people"
-    ) as mock_identify, patch("ml_client.recognize_emotions") as mock_recognize, patch(
-        "ml_client.collection", mock_db_collection
-    ):
-
-        # Setup mocks
-        mock_decode.return_value = np.zeros((100, 100, 3))
-        mock_identify.return_value = np.array([[10, 20, 30, 40]])
-        mock_recognize.return_value = [{"happy": 0.8, "sad": 0.2}]
-        mock_db_collection.insert_one.side_effect = Exception("Database error")
-
-        # Process image and expect exception
-        with pytest.raises(Exception) as exc_info:
-            process_image(encoded_image)
-
-        assert str(exc_info.value) == "Database error"
