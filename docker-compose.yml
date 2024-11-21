@@ -1,12 +1,12 @@
-version: '3.9'
+#version: '3.9'
 
 services:
   web:
     build:
-      context: .  # Use the current directory for the web app
+      context: ./web_app  
       dockerfile: Dockerfile  # Dockerfile for the web app
     ports:
-      - "5001:5001"  # Map port 5000 of the container to port 5000 of the host
+      - "5000:5000"  # Map port 5000 of the container to port 5000 of the host
     volumes:
       - .:/app  # Mount the current directory to `/app` in the container
     depends_on:
@@ -15,11 +15,14 @@ services:
       - MONGO_URI=mongodb://mongodb:27017/  # MongoDB connection for the web app
       - ML_CLIENT_URL=http://ml:5001/process  # ML service connection
       - SECRET_KEY=your_secret_key  # Flask app secret key
+    networks:
+      - app-network
 
   ml:
     build:
       context: ./machine-learning-client  # Use the machine-learning-client directory
       dockerfile: Dockerfile  # Dockerfile for the ML service
+    container_name: ml-client-container
     ports:
       - "5001:5001"  # Map port 5001 of the container to port 5001 of the host
     volumes:
@@ -28,6 +31,8 @@ services:
       - mongodb  # Ensure MongoDB starts before the ML service
     environment:
       - MONGO_URI=mongodb://mongodb:27017/  # MongoDB connection for the ML app
+    networks:
+      - app-network
 
   mongodb:
     image: mongo:6.0
@@ -36,6 +41,11 @@ services:
       - "27017:27017"  # Map port 27017 of the container to port 27017 of the host
     volumes:
       - mongo_data:/data/db  # Persist MongoDB data
+    networks:
+      - app-network
 
 volumes:
   mongo_data:  # Named volume for MongoDB data persistence
+
+networks :
+  app-network:
