@@ -10,7 +10,7 @@ import numpy as np
 from fer import FER
 from pymongo import MongoClient
 
-client = MongoClient("=created by teammates")
+client = MongoClient("mongodb://mongodb:27017/")
 db = client["ml_database"]
 collection = db["analysis_results"]
 

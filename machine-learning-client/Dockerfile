@@ -32,7 +32,9 @@ RUN pip install --no-cache-dir pipenv
 COPY machine-learning-client/Pipfile* ./
 RUN pipenv install --system --deploy
 COPY machine-learning-client/ml_client.py ./
+COPY machine-learning-client/app.py ./
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV OPENCV_VIDEOIO_PRIORITY_MSMF=0
-CMD ["python", "ml_client.py"]
+EXPOSE 5001
+CMD ["python", "app.py"]

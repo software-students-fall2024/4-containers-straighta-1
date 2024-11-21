@@ -8,7 +8,7 @@ Data will be stored in:
     database: ml_database
     collection: analysis_results
 
-Backend must import process_image from ml_client.py
+Backend must would deal with process_image_api in app.py
     - process_image(image_data) requires image data from upload
     - Note: ml_database will be in same cluster with database for
       uploads. 
@@ -21,7 +21,7 @@ Backend must import process_image from ml_client.py
 A possible form of data returned from process_image:
 
 * if no image is read:
-    - {"message": "Failed to decode image"}
+    - {"message": "No image data provided"}, status: 400
 
 * if no faces can be detected in image:
     - {"message": "No faces detected"}
