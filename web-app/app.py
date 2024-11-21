@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, session, url_for, flash
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from pymongo import MongoClient
@@ -78,5 +78,25 @@ def upload():
 
     return render_template('upload.html')
 
+#有问题, 需要改进!!!
+@app.route('/analysis')
+def analysis():
+    """Display analysis results."""
+    analysis_results = session.get('analysis', {})
+    filename = request.args.get('filename', '')
+
+    if not analysis_results:
+        flash("No analysis results found. Please upload an image first.", "error")
+        return redirect(url_for('upload'))
+
+    return render_template(
+        'analysis.html',
+        filename=filename,
+        faces=analysis_results.get('faces_detected', 0),
+        emotions=analysis_results.get('emotions', [])
+    )
+
+    return app
+    
 if __name__ == '__main__':
     app.run(debug=True)
