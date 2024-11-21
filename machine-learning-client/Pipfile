@@ -12,6 +12,7 @@ black = "*"
 pylint = "*"
 pytest-cov = "*"
 flask = "*"
+tensorflow = "*"
 
 [dev-packages]
 

@@ -21,7 +21,7 @@ services:
       context: ./machine-learning-client  # Use the machine-learning-client directory
       dockerfile: Dockerfile  # Dockerfile for the ML service
     ports:
-      - "5001:5001"  # Map port 5001 of the container to port 5001 of the host
+      - "5002:5001"  # Map port 5001 of the container to port 5001 of the host
     volumes:
       - ./machine-learning-client:/app  # Mount the machine-learning-client folder to `/app`
     depends_on:

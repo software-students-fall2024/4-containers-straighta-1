@@ -31,6 +31,9 @@ RUN apt-get update && apt-get install -y \
 RUN pip install --no-cache-dir pipenv
 COPY Pipfile* ./
 RUN pipenv install --system --deploy
+
+RUN pip install tensorflow
+
 COPY ml_client.py ./
 COPY app.py ./
 ENV PYTHONUNBUFFERED=1
