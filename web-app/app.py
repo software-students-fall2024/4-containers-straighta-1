@@ -32,21 +32,22 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from pymongo import MongoClient
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Change this to a strong secret key
+app.secret_key = "your_secret_key"  # Change this to a strong secret key
 """
 MongoDB setup
 - Connects to a local MongoDB instance.
 - Defines a database called 'user_database' and a collection called 'users'.
 """
-client = MongoClient('mongodb://localhost:27017/')
-db = client['user_database']
-users_collection = db['users']
+client = MongoClient("mongodb://localhost:27017/")
+db = client["user_database"]
+users_collection = db["users"]
 
 # File upload setup
-UPLOAD_FOLDER = 'uploads'
+UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-ALLOWED_EXTENSIONS = {'txt', 'csv', 'jpg', 'png', 'pdf'}
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+ALLOWED_EXTENSIONS = {"txt", "csv", "jpg", "png", "pdf"}
+
 
 def allowed_file(filename):
     """
@@ -58,9 +59,10 @@ def allowed_file(filename):
     Returns:
         bool: True if the file extension is allowed, False otherwise.
     """
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route('/')
+
+@app.route("/")
 def home():
     """
     Redirect to the login page.
@@ -68,109 +70,114 @@ def home():
     Returns:
         Response: Redirect response to the login page.
     """
-    return redirect(url_for('login'))
+    return redirect(url_for("login"))
 
-@app.route('/login', methods=['GET', 'POST'])
+
+@app.route("/login", methods=["GET", "POST"])
 def login():
     """
     Handle user login.
-    
+
     If the login is successful, redirect to the upload page.
     If the login fails, reload the login page with an error message.
 
     Returns:
         Response: Rendered login template or redirect response.
     """
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
 
-        user = users_collection.find_one({'username': username})
-        if user and check_password_hash(user['password'], password):
+        user = users_collection.find_one({"username": username})
+        if user and check_password_hash(user["password"], password):
             flash("Login successful!", "success")
-            return redirect(url_for('upload'))
+            return redirect(url_for("upload"))
         flash("Invalid username or password. Please try again.", "error")
-        return redirect(url_for('login'))
+        return redirect(url_for("login"))
 
-    return render_template('login.html')
+    return render_template("login.html")
 
-@app.route('/sign_up', methods=['GET', 'POST'])
+
+@app.route("/sign_up", methods=["GET", "POST"])
 def sign_up():
     """
     Handle user registration.
-    
+
     If the username already exists, reload the sign-up page with an error message.
     If the registration is successful, redirect to the login page.
 
     Returns:
         Response: Rendered sign-up template or redirect response.
     """
-    if request.method == 'POST':
-        username = request.form['username']
-        password = generate_password_hash(request.form['password'])
+    if request.method == "POST":
+        username = request.form["username"]
+        password = generate_password_hash(request.form["password"])
 
-        if users_collection.find_one({'username': username}):
+        if users_collection.find_one({"username": username}):
             flash("Username already exists. Please choose another one.", "error")
-            return redirect(url_for('sign_up'))
+            return redirect(url_for("sign_up"))
 
-        users_collection.insert_one({'username': username, 'password': password})
+        users_collection.insert_one({"username": username, "password": password})
         flash("Sign-up successful! Please log in.", "success")
-        return redirect(url_for('login'))
+        return redirect(url_for("login"))
 
-    return render_template('sign_up.html')
+    return render_template("sign_up.html")
 
-@app.route('/upload', methods=['GET', 'POST'])
+
+@app.route("/upload", methods=["GET", "POST"])
 def upload():
     """
     Handle file upload.
-    
+
     If the upload is successful, reload the upload page with a success message.
     If there is an error, reload the upload page with an error message.
 
     Returns:
         Response: Rendered upload template or redirect response.
     """
-    if request.method == 'POST':
-        if 'file' not in request.files:
+    if request.method == "POST":
+        if "file" not in request.files:
             flash("No file part", "error")
             return redirect(request.url)
 
-        file = request.files['file']
-        if file.filename == '':
+        file = request.files["file"]
+        if file.filename == "":
             flash("No file selected", "error")
             return redirect(request.url)
 
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
             flash("File uploaded successfully!", "success")
-            return redirect(url_for('upload'))
+            return redirect(url_for("upload"))
 
-    return render_template('upload.html')
+    return render_template("upload.html")
 
-@app.route('/analysis')
+
+@app.route("/analysis")
 def analysis():
     """
     Display analysis results (placeholder).
-    
+
     If no analysis results are found, redirect to the upload page with an error message.
 
     Returns:
         Response: Rendered analysis template or redirect response.
     """
-    analysis_results = session.get('analysis', {})
-    filename = request.args.get('filename', '')
+    analysis_results = session.get("analysis", {})
+    filename = request.args.get("filename", "")
 
     if not analysis_results:
         flash("No analysis results found. Please upload an image first.", "error")
-        return redirect(url_for('upload'))
+        return redirect(url_for("upload"))
 
     return render_template(
-        'analysis.html',
+        "analysis.html",
         filename=filename,
-        faces=analysis_results.get('faces_detected', 0),
-        emotions=analysis_results.get('emotions', [])
+        faces=analysis_results.get("faces_detected", 0),
+        emotions=analysis_results.get("emotions", []),
     )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app.run(debug=True)
