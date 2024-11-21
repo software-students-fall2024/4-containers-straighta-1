@@ -136,6 +136,10 @@ No additional configuration is needed for MongoDB if running with Docker Compose
      ```bash
      pip install -r requirements.txt
      ```
+   - if tensorflow and dotenv is missing:
+   ```bash
+     pip install python-dotenv tensorflow
+     ```
 
 5. **Set up Environment Variables**:
    - Create a `.env` file in the root directory of your project and add the following variables:
