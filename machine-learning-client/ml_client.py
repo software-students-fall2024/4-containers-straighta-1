@@ -84,7 +84,7 @@ def process_image(image_data):
         "image": image_data,
     }
     collection.insert_one(results)
-
+    results["_id"] = str(results["_id"])
     return {
         "message": "Image processed",
         "results": results,
