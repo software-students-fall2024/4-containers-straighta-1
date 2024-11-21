@@ -48,7 +48,6 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 ALLOWED_EXTENSIONS = {"txt", "csv", "jpg", "png", "pdf"}
 
-
 def allowed_file(filename):
     """
     Check if the file has an allowed extension.
@@ -61,7 +60,6 @@ def allowed_file(filename):
     """
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
 @app.route("/")
 def home():
     """
@@ -72,12 +70,11 @@ def home():
     """
     return redirect(url_for("login"))
 
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """
     Handle user login.
-
+    
     If the login is successful, redirect to the upload page.
     If the login fails, reload the login page with an error message.
 
@@ -97,12 +94,11 @@ def login():
 
     return render_template("login.html")
 
-
 @app.route("/sign_up", methods=["GET", "POST"])
 def sign_up():
     """
     Handle user registration.
-
+    
     If the username already exists, reload the sign-up page with an error message.
     If the registration is successful, redirect to the login page.
 
@@ -123,12 +119,11 @@ def sign_up():
 
     return render_template("sign_up.html")
 
-
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
     """
     Handle file upload.
-
+    
     If the upload is successful, reload the upload page with a success message.
     If there is an error, reload the upload page with an error message.
 
@@ -153,12 +148,11 @@ def upload():
 
     return render_template("upload.html")
 
-
 @app.route("/analysis")
 def analysis():
     """
     Display analysis results (placeholder).
-
+    
     If no analysis results are found, redirect to the upload page with an error message.
 
     Returns:
@@ -177,7 +171,6 @@ def analysis():
         faces=analysis_results.get("faces_detected", 0),
         emotions=analysis_results.get("emotions", []),
     )
-
 
 if __name__ == "__main__":
     app.run(debug=True)
