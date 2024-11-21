@@ -1,5 +1,17 @@
 version: '3.9'
 services:
+
+  ml-client:
+    build:
+      context: .
+    container_name: ml-client-container
+    ports:
+      - "5001:5001"
+    networks:
+      - app-network
+    depends_on:
+      - mongodb
+
   web:
     build:
       context: .
@@ -10,6 +22,7 @@ services:
       - .:/app       # Sync local code with the container
     depends_on:
       - mongodb      # Ensure MongoDB starts before the web app
+      - ml-client      
 
   mongodb:
     image: mongo:6.0
@@ -18,6 +31,8 @@ services:
       - "27017:27017"  # Map port 27017 on the host to port 27017 in the container
     volumes:
       - mongo_data:/data/db  # Persist MongoDB data
+    networks:
+      - app-network  
 
 volumes:
   mongo_data:               # Named volume for MongoDB data persistence
