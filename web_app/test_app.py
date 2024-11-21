@@ -1,7 +1,7 @@
 import pytest
 import os
 import tempfile
-from web_app.app import app, users_collection
+from .app import app, users_collection
 
 
 @pytest.fixture
