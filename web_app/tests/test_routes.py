@@ -1,7 +1,33 @@
 import os
 import io
 import pytest
-from unittest.mock import patch
+from app import app  # Ensure `app.py` is in the same directory as this file
+
+# MockResponse class for mocking external API responses
+class MockResponse:
+    def __init__(self, json_data, status_code):
+        self.json_data = json_data
+        self.status_code = status_code
+
+    def json(self):
+        return self.json_data
+
+
+@pytest.fixture
+def client():
+    """Setup a test client for the Flask application."""
+    app.config['TESTING'] = True
+    app.config['UPLOAD_FOLDER'] = 'test_uploads'  # Temporary upload folder
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+    with app.test_client() as client:
+        yield client
+
+    # Cleanup test uploads
+    if os.path.exists(app.config['UPLOAD_FOLDER']):
+        for file in os.listdir(app.config['UPLOAD_FOLDER']):
+            os.remove(os.path.join(app.config['UPLOAD_FOLDER'], file))
+        os.rmdir(app.config['UPLOAD_FOLDER'])
 
 
 def test_home_redirect(client):
@@ -108,12 +134,3 @@ def test_analysis_page(client):
     assert b"Faces Detected: 2" in response.data
     assert b"happy" in response.data
     assert b"sad" in response.data
-
-
-class MockResponse:
-    def __init__(self, json_data, status_code):
-        self.json_data = json_data
-        self.status_code = status_code
-
-    def json(self):
-        return self.json_data
