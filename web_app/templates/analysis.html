@@ -9,14 +9,21 @@
 <body>
   <h2>Analysis Result</h2>
   <h3>Uploaded Image</h3>
-  <img src="{{ url_for('static', filename=f'uploads/{filename}') }}" alt="Uploaded Image" style="max-width: 300px;">
+  <img src="{{ url_for('static', filename=('uploads/' + filename)) }}" alt="Uploaded Image" style="max-width: 300px;">
   
   <h3>Analysis Details</h3>
   <p><strong>Number of Faces Detected:</strong> {{ faces }}</p>
   <h4>Emotions:</h4>
   <ul>
-    {% for face in emotions %}
-      <li>Face {{ loop.index }}: {{ face }}</li>
+    {% for face_emotions in emotions %}
+      <li>
+        Face {{ loop.index }}:
+        <ul>
+          {% for emotion, value in face_emotions.items() %}
+            <li>{{ emotion.capitalize() }}: {{ value | round(2) }}</li>
+          {% endfor %}
+        </ul>
+      </li>
     {% endfor %}
   </ul>
   <a href="{{ url_for('upload') }}">Upload Another Image</a>
