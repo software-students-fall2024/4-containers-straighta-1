@@ -3,7 +3,7 @@ version: '3.9'
 services:
   web:
     build:
-      context: .  # Use the current directory for the web app
+      context: ./web_app  # Use the current directory for the web app
       dockerfile: Dockerfile  # Dockerfile for the web app
     ports:
       - "5001:5001"  # Map port 5000 of the container to port 5000 of the host
