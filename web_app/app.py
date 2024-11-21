@@ -1,4 +1,7 @@
-import sys
+"""
+Flask Web Application for User Authentication and File Upload.
+"""
+
 import os
 import base64
 from flask import Flask, render_template, request, redirect, url_for, flash, session
@@ -34,7 +37,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 # ML container configuration
-ML_CLIENT_URL = os.getenv("ML_CLIENT_URL", "http://ml-container:5001/process")  # Set the ML container URL
+ML_CLIENT_URL = os.getenv("ML_CLIENT_URL", "http://ml-container:5001/process")
 
 
 def allowed_file(filename):
@@ -120,21 +123,21 @@ def upload():
 
             # Send the image data to the ML container
             try:
-                response = requests.post(
+                response = request.post(
                     ML_CLIENT_URL,
                     json={"image": image_data}
                 )
                 response_data = response.json()
 
                 if response.status_code != 200:
-                    flash(f"ML container error: {response_data.get('message', 'Unknown error')}", "error")
+                    flash(f"ML error: {response_data.get('message', 'Unknown error')}", "error")
                     return redirect(url_for('upload'))
 
                 # Pass results to the analysis page
                 session['analysis'] = response_data
                 return redirect(url_for('analysis', filename=filename))
 
-            except requests.exceptions.RequestException as e:
+            except request.exceptions.RequestException as e:
                 flash(f"Failed to connect to the ML container: {e}", "error")
                 return redirect(url_for('upload'))
 
