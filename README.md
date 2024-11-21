@@ -1,5 +1,6 @@
 ![Lint-free](https://github.com/nyu-software-engineering/containerized-app-exercise/actions/workflows/lint.yml/badge.svg)
 
+[![log github events](https://github.com/software-students-fall2024/4-containers-straighta-1/actions/workflows/event-logger.yml/badge.svg)](https://github.com/software-students-fall2024/4-containers-straighta-1/actions/workflows/event-logger.yml)
 # Containerized App Exercise
 
 # Project Name: Emotion Detection System
