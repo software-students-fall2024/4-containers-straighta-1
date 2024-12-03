@@ -1,0 +1,11 @@
+opencv-python-headless
+fer
+pymongo
+pytest
+black
+pylint
+pytest-cov
+flask
+python-dotenv>=1.0
+tensorflow
+moviepy

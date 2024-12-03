@@ -4,13 +4,15 @@ Machine learning client to process images and detect emotions.
 
 # pylint: disable=no-member
 
+import os
 import base64
 import cv2
 import numpy as np
 from fer import FER
 from pymongo import MongoClient
 
-client = MongoClient("mongodb://mongodb:27017/")
+mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
+client = MongoClient(mongo_uri)
 db = client["ml_database"]
 collection = db["analysis_results"]
 

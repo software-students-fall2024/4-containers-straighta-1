@@ -13,6 +13,15 @@ RUN apt-get update && apt-get install -y \
     libxrender-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Install pipenv for managing Python environments
+RUN pip install --no-cache-dir pipenv
+
+# Copy Pipfile and Pipfile.lock first to leverage Docker caching
+COPY Pipfile Pipfile.lock /app/
+
+# Install dependencies using pipenv
+RUN pipenv install --deploy --system
+
 # Copy the current directory's content into the container
 COPY . /app
 
