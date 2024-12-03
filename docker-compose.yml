@@ -8,7 +8,7 @@ services:
     ports:
       - "5000:5000"  # Map port 5000 of the container to port 5000 of the host
     volumes:
-      - .:/app  # Mount the current directory to `/app` in the container
+      - ./web_app:/app  # Mount the current directory to `/app` in the container
     depends_on:
       - ml  # Ensure ML service starts before the web app
     environment:
