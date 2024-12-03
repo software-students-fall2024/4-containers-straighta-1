@@ -11,7 +11,7 @@ import numpy as np
 from fer import FER
 from pymongo import MongoClient
 
-mongo_uri = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')
+mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
 client = MongoClient(mongo_uri)
 db = client["ml_database"]
 collection = db["analysis_results"]
